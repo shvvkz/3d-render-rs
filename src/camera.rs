@@ -19,7 +19,7 @@ impl Plugin for CameraPlugin {
 fn spawn_camera(mut commands: Commands) {
     commands.spawn((
         Camera3dBundle {
-            transform: Transform::from_xyz(0.0, 80.0, 0.0).looking_at(Vec3::ZERO, Vec3::Z),
+            transform: Transform::from_xyz(0.0, 5.0, 0.0).looking_at(Vec3::ZERO, Vec3::Z),
             ..default()
         },
         OrbitCamera {
@@ -52,9 +52,9 @@ fn update_camera(
 
     // Handle mouse motion
     if mouse_state.pressed {
-        for event in mouse_motion_events.iter() {
+        for event in mouse_motion_events.read() {
             let (mut transform, mut orbit_camera) = query.single_mut();
-            let sensitivity = 0.2;
+            let sensitivity = 0.4;
 
             orbit_camera.yaw += event.delta.x * sensitivity; // Inverted direction
             orbit_camera.pitch -= event.delta.y * sensitivity;
@@ -65,7 +65,7 @@ fn update_camera(
             let pitch_radians = orbit_camera.pitch.to_radians();
 
             let x = orbit_camera.distance * yaw_radians.cos() * pitch_radians.cos();
-            let y = orbit_camera.distance * pitch_radians.sin();
+            let y = -(orbit_camera.distance * pitch_radians.sin());
             let z = orbit_camera.distance * yaw_radians.sin() * pitch_radians.cos();
 
             transform.translation = Vec3::new(x, y, z);
@@ -74,16 +74,16 @@ fn update_camera(
     }
 
     // Handle mouse wheel for zoom
-    for event in mouse_wheel_events.iter() {
+    for event in mouse_wheel_events.read() {
         let (mut transform, mut orbit_camera) = query.single_mut();
-        orbit_camera.distance -= event.y * delta_time * 2.0;
+        orbit_camera.distance -= event.y * delta_time * 10.0;
         orbit_camera.distance = orbit_camera.distance.clamp(2.0, 15.0);
 
         let yaw_radians = orbit_camera.yaw.to_radians();
         let pitch_radians = orbit_camera.pitch.to_radians();
 
         let x = orbit_camera.distance * yaw_radians.cos() * pitch_radians.cos();
-        let y = orbit_camera.distance * pitch_radians.sin();
+        let y = -(orbit_camera.distance * pitch_radians.sin());
         let z = orbit_camera.distance * yaw_radians.sin() * pitch_radians.cos();
 
         transform.translation = Vec3::new(x, y, z);
